@@ -1,0 +1,30 @@
+stateDiagram
+    state "Parkowanie roweru" as Start
+    state "Weryfikacja lokalizacji (GPS)" as GPS
+    state "Czy w strefie zwrotu?" as CheckZone <<choice>>
+    state "Nalicz opłatę dodatkową" as Penalty
+    state "Oblicz czas i koszt przejazdu" as Calculate
+    state "Pobierz opłatę z podpiętej karty" as Charge
+    state "Zablokuj elektrozamek" as Lock
+    state "Zgłoszenie usterki przez klienta?" as CheckIssue <<choice>>
+    state "Zmień status na: Do przeglądu" as Maintenance
+    state "Zmień status na: Dostępny" as Available
+
+    [*] --> Start
+    Start --> GPS
+    GPS --> CheckZone
+    
+    CheckZone --> Penalty : Poza strefą
+    CheckZone --> Calculate : W strefie
+    
+    Penalty --> Calculate
+    Calculate --> Charge
+    Charge --> Lock
+    
+    Lock --> CheckIssue
+    
+    CheckIssue --> Maintenance : Tak (zgłoszono usterkę)
+    CheckIssue --> Available : Nie (wszystko OK)
+    
+    Maintenance --> [*]
+    Available --> [*]

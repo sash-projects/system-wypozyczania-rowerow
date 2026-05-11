@@ -1,0 +1,28 @@
+stateDiagram
+    [*] --> WyborRoweru: Klient wybiera rower
+    
+    state WyborRoweru {
+        [*] --> SkanowanieKodu: Zeskanuj kod QR
+        SkanowanieKodu --> SprawdzenieBazy: System sprawdza ID roweru
+    }
+
+    SprawdzenieBazy --> CzyDostepny: Czy rower jest wolny?
+    
+    CzyDostepny --> Odmowa: Nie (Zajęty/Serwis)
+    Odmowa --> [*]: Wyświetl komunikat błędu
+
+    CzyDostepny --> AutoryzacjaPłatności: Tak (Dostępny)
+    
+    state AutoryzacjaPłatności {
+        [*] --> PobranieSrodkow: Zablokuj kaucję/środki
+        PobranieSrodkow --> WynikPlatnosci: Sprawdź status
+    }
+
+    WynikPlatnosci --> BladPlatnosci: Niepowodzenie
+    BladPlatnosci --> WyborRoweru: Spróbuj ponownie/zmień kartę
+
+    WynikPlatnosci --> OdblokowanieBlokady: Sukces
+    
+    OdblokowanieBlokady --> RozpoczecieNaliczania: Zwolnij elektrozamek
+    RozpoczecieNaliczania --> PowiadomienieKlienta: Wyślij info o starcie sesji
+    PowiadomienieKlienta --> [*]: Rower wypożyczony

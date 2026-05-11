@@ -1,0 +1,19 @@
+sequenceDiagram
+    autonumber
+    actor U as Klient
+    participant A as Aplikacja Mobilna
+    participant S as Serwer Systemu
+    participant B as Baza Danych
+    participant R as Rower (IoT)
+    participant M as Panel Serwisanta
+
+    U->>A: Wybiera opcję "Zgłoś usterkę"
+    A->>U: Wyświetla formularz (typ awarii, zdjęcie)
+    U->>A: Wysyła zgłoszenie (np. "uszkodzony hamulec")
+    A->>S: Przesyła dane zgłoszenia + ID_roweru
+    S->>B: Zmiana statusu na "Wycofany z użytku"
+    S->>R: Wysyła blokadę bezpieczeństwa (Hard Lock)
+    R-->>S: Potwierdzenie blokady
+    S->>M: Generuje zgłoszenie serwisowe (Alert)
+    S-->>A: Komunikat: "Dziękujemy. Rower został zabezpieczony."
+    A-->>U: Propozycja znalezienia innego roweru w pobliżu

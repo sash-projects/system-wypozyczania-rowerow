@@ -1,0 +1,26 @@
+stateDiagram
+    [*] --> WykrycieProblemu
+    
+    state WykrycieProblemu {
+        ZgłoszenieUżytkownika --> SystemoweOstrzeżenie: Niskie napięcie/GPS Error
+        SystemoweOstrzeżenie --> BlokadaZdalna: Zmień status na 'W serwisie'
+    }
+
+    BlokadaZdalna --> PrzypisanieSerwisanta: Generuj zlecenie
+    
+    state SerwisTeranowy {
+        PrzypisanieSerwisanta --> DojazdDoRoweru: Lokalizacja GPS
+        DojazdDoRoweru --> Diagnostyka: Przegląd fizyczny
+    }
+
+    Diagnostyka --> CzyNaprawaNaMiejscu: Czy można naprawić od ręki?
+    
+    CzyNaprawaNaMiejscu --> Naprawa: Tak (np. opona/bateria)
+    Naprawa --> TestSprawności
+    
+    CzyNaprawaNaMiejscu --> TransportDoWarsztatu: Nie (poważna usterka)
+    TransportDoWarsztatu --> NaprawaWarsztatowa
+    NaprawaWarsztatowa --> TestSprawności
+
+    TestSprawności --> Aktywacja: Wynik pozytywny
+    Aktywacja --> [*]: Rower dostępny dla klientów

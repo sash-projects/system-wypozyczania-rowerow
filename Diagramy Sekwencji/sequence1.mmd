@@ -1,0 +1,20 @@
+sequenceDiagram
+    autonumber
+    actor U as Klient
+    participant A as Aplikacja Mobilna
+    participant S as Serwer Systemu
+    participant P as Procesor Płatności
+    participant R as Rower (IoT)
+
+    U->>A: Skanuje kod QR roweru
+    A->>S: Zapytanie o status roweru (ID_roweru)
+    S-->>A: Rower dostępny, wymagana kaucja
+    A->>U: Prośba o potwierdzenie płatności
+    U->>A: Potwierdza wypożyczenie
+    A->>S: Zlecenie blokady kaucji
+    S->>P: Autoryzacja środków (Pre-autoryzacja)
+    P-->>S: Potwierdzenie (Success)
+    S->>R: Wysyłanie komendy: ODBLOKUJ
+    R-->>S: Status: ODBLOKOWANY
+    S-->>A: Powiadomienie: Możesz jechać!
+    A-->>U: Wyświetlenie czasu startu
