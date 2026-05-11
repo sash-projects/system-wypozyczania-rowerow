@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VELOCYCLE — Wypożyczalnia Rowerów</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f5f0;--dark:#1a1a1a;--gold:#c8b97a;--gold-dark:#a89550;
+  --text:#1a1a1a;--muted:#888;--border:#e0ddd5;--card:#fff;--surface:#f0ede6;
+  --red:#E24B4A;--green:#639922;--amber:#BA7517;--blue:#185FA5;
+  --red-bg:#FCEBEB;--green-bg:#EAF3DE;--amber-bg:#FAEEDA;--blue-bg:#E6F1FB;
+  --red-t:#A32D2D;--green-t:#3B6D11;--amber-t:#854F0B;--blue-t:#185FA5;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.page{display:none;min-height:100vh;flex-direction:column}
+.page.active{display:flex}
+
+/* ── shared ── */
+.topbar{background:var(--dark);color:#f5f0e8;display:flex;align-items:center;justify-content:space-between;padding:0 1.4rem;height:54px;flex-shrink:0;position:sticky;top:0;z-index:200}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--gold);letter-spacing:1px}
+.btn-ghost{padding:6px 14px;background:transparent;border:1px solid var(--gold);color:var(--gold);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .2s}
+.btn-ghost:hover{background:var(--gold);color:var(--dark)}
+.btn-dark{padding:9px 18px;background:var(--dark);color:#f5f0e8;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:opacity .15s}
+.btn-dark:hover{opacity:.85}
+.btn-sm{padding:5px 12px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--text);transition:all .15s}
+.btn-sm:hover{background:var(--surface)}
+.btn-sm.p{background:var(--dark);color:#f5f0e8;border-color:var(--dark)}
+.btn-sm.p:hover{opacity:.85}
+.btn-sm.d{border-color:#f0a0a0;color:var(--red-t)}
+.badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:500}
+.b-ok{background:var(--green-bg);color:var(--green-t)}
+.b-warn{background:var(--amber-bg);color:var(--amber-t)}
+.b-err{background:var(--red-bg);color:var(--red-t)}
+.b-info{background:var(--blue-bg);color:var(--blue-t)}
+.b-gray{background:var(--surface);color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{text-align:left;padding:8px 14px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:400;border-bottom:1px solid var(--border)}
+tbody td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1rem}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap}
+.card-title{font-size:14px;font-weight:500}
+.fi{padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;background:#fff;color:var(--text);outline:none;transition:border .15s;width:100%}
+.fi:focus{border-color:var(--gold)}
+.fl{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);display:block;margin-bottom:4px}
+.fg{margin-bottom:12px}
+.form-row{display:grid;gap:10px;margin-bottom:10px}
+.fr2{grid-template-columns:1fr 1fr}
+.fr3{grid-template-columns:1fr 1fr 1fr}
+select.fi{cursor:pointer}
+textarea.fi{resize:vertical;min-height:80px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.2rem}
+.metric{background:var(--surface);border-radius:8px;padding:12px 14px}
+.metric-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.metric-val{font-family:'Bebas Neue',sans-serif;font-size:28px;line-height:1}
+.empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:14px}
+
+/* ── toast ── */
+.toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--dark);color:#f5f0e8;padding:11px 22px;border-radius:10px;font-size:13px;font-weight:500;transition:transform .3s;z-index:9999;white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ── modal ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:#0007;z-index:500;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border-radius:14px;width:100%;max-width:440px;overflow:hidden}
+.modal-hdr{background:var(--dark);padding:1.2rem 1.4rem;display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);letter-spacing:.5px}
+.modal-close{background:none;border:none;color:#888;font-size:22px;cursor:pointer;line-height:1}
+.modal-close:hover{color:#f5f0e8}
+.modal-body{padding:1.4rem}
+.modal-foot{padding:0 1.4rem 1.4rem;display:flex;gap:8px;justify-content:flex-end}
+
+/* ══════════════════════════════
+   CLIENT PAGE
+══════════════════════════════ */
+.hero{background:var(--dark);color:#f5f0e8;padding:3.5rem 1.5rem 2.5rem;position:relative;overflow:hidden;flex-shrink:0}
+.hero-bg{position:absolute;font-family:'Bebas Neue',sans-serif;font-size:200px;color:#ffffff07;top:-20px;right:-40px;line-height:1;pointer-events:none;user-select:none}
+.hero-tag{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:.7rem}
+.h1{font-family:'Bebas Neue',sans-serif;font-size:60px;line-height:.95;margin-bottom:.9rem}
+.h1 span{color:var(--gold)}
+.hero-sub{font-size:14px;color:#aaa;max-width:440px;line-height:1.6;margin-bottom:1.8rem}
+.search-wrap{display:flex;max-width:480px;background:#fff;border-radius:10px;overflow:hidden}
+.search-wrap input{flex:1;border:none;outline:none;padding:11px 15px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--dark);min-width:0}
+.search-wrap button{background:var(--gold);border:none;padding:11px 20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--dark);cursor:pointer;white-space:nowrap;transition:background .2s}
+.search-wrap button:hover{background:var(--gold-dark)}
+.hero-stats{display:flex;gap:2rem;margin-top:1.8rem}
+.hs-num{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--gold);line-height:1}
+.hs-lbl{font-size:11px;color:#777;letter-spacing:1px;text-transform:uppercase}
+
+.filters{padding:1rem 1.5rem;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border);flex-shrink:0}
+.fbtn{padding:6px 15px;border-radius:99px;border:1px solid var(--border);background:transparent;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--muted);transition:all .15s}
+.fbtn.active,.fbtn:hover{background:var(--dark);color:#f5f0e8;border-color:var(--dark)}
+
+.scroll-area{flex:1;overflow-y:auto}
+.bikes-section{padding:1.4rem}
+.sec-lbl{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:1rem}
+.bikes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:12px}
+.bike-card{background:var(--card);border:1px solid var(--border);border-radius:13px;overflow:hidden;cursor:pointer;transition:all .18s}
+.bike-card:hover{border-color:#aaa;transform:translateY(-2px)}
+.bike-card.sel{border:2px solid var(--gold)}
+.bike-card.unavail{opacity:.55;cursor:not-allowed}
+.bike-img{height:105px;display:flex;align-items:center;justify-content:center;font-size:60px}
+.bike-img.city{background:#eaf3de}.bike-img.mountain{background:#faeeda}
+.bike-img.electric{background:#e6f1fb}.bike-img.cargo{background:#faece7}
+.bike-info{padding:11px}
+.bike-name{font-size:14px;font-weight:500;margin-bottom:2px}
+.bike-type{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px}
+.bike-footer{display:flex;align-items:center;justify-content:space-between}
+.bike-price{font-family:'Bebas Neue',sans-serif;font-size:21px}
+.bike-price small{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:400;color:var(--muted)}
+.avail-dot{width:8px;height:8px;border-radius:50%}
+.avail-dot.yes{background:var(--green)}.avail-dot.no{background:var(--red)}
+
+/* client subpages */
+.cpage{display:none;flex:1;overflow-y:auto}
+.cpage.active{display:block}
+.booking-area{background:var(--surface);border-top:1px solid var(--border);padding:1.4rem}
+.sel-banner{background:var(--green-bg);border:1px solid #C0DD97;border-radius:10px;padding:10px 14px;font-size:13px;color:var(--green-t);display:none;align-items:center;gap:8px;margin-bottom:12px}
+.sel-banner.show{display:flex}
+
+.my-res-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px}
+.mrc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.mrc-name{font-weight:500;font-size:14px}
+.mrc-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.mrc-detail{display:flex;gap:16px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);padding-top:8px;margin-top:8px;flex-wrap:wrap}
+.mrc-detail span b{color:var(--text)}
+
+.profile-section{padding:1.4rem}
+.profile-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1rem}
+.profile-hdr{background:var(--dark);padding:1.5rem;display:flex;align-items:center;gap:1rem}
+.profile-avatar{width:54px;height:54px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:500;color:var(--dark);flex-shrink:0}
+.profile-name{font-family:'Bebas Neue',sans-serif;font-size:26px;color:#f5f0e8;line-height:1}
+.profile-email{font-size:12px;color:#888;margin-top:2px}
+.profile-body{padding:1.2rem}
+.profile-stat-row{display:flex;gap:1rem;margin-bottom:1.2rem}
+.pstat{flex:1;background:var(--surface);border-radius:8px;padding:10px 12px;text-align:center}
+.pstat-val{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--gold)}
+.pstat-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+
+/* client bottom nav */
+.client-nav{display:flex;border-top:1px solid var(--border);background:var(--card);flex-shrink:0}
+.cn-item{flex:1;padding:10px 6px;text-align:center;font-size:10px;color:var(--muted);cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .15s}
+.cn-item svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.cn-item.active{color:var(--gold)}
+
+/* ══════════════════════════════
+   AUTH PAGE
+══════════════════════════════ */
+.auth-body{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem}
+.auth-card{background:var(--card);border:1px solid var(--border);border-radius:16px;width:100%;max-width:390px;overflow:hidden;box-shadow:0 8px 40px #0002}
+.auth-hdr{background:var(--dark);padding:2rem;text-align:center}
+.auth-logo{font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--gold)}
+.auth-sub{font-size:11px;color:#666;letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.auth-tabs{display:flex;border-bottom:1px solid var(--border)}
+.atab{flex:1;padding:12px;text-align:center;font-size:13px;cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s}
+.atab.active{color:var(--text);border-bottom-color:var(--dark);font-weight:500}
+.auth-form{padding:1.4rem;display:none}
+.auth-form.active{display:block}
+.afield{margin-bottom:13px}
+.afield label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:5px}
+.afield input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:#fff;outline:none;transition:border .15s}
+.afield input:focus{border-color:var(--gold)}
+.btn-auth{width:100%;padding:12px;background:var(--dark);color:#f5f0e8;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;margin-top:4px;transition:opacity .15s}
+.btn-auth:hover{opacity:.85}
+.ahint{font-size:12px;color:var(--muted);text-align:center;margin-top:11px;line-height:1.5}
+.ahint a{color:var(--gold-dark);cursor:pointer;text-decoration:underline}
+.demo-box{background:var(--surface);border-radius:8px;padding:11px;margin-top:13px;font-size:12px;color:var(--muted);line-height:1.8}
+.demo-box b{color:var(--text)}
+
+/* ══════════════════════════════
+   WORKER PANEL
+══════════════════════════════ */
+.worker-role{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#555;margin-left:6px}
+.worker-user{display:flex;align-items:center;gap:10px;font-size:13px;color:#f5f0e8}
+.w-avatar{width:30px;height:30px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--dark)}
+.btn-logout{padding:4px 11px;background:transparent;border:1px solid #444;color:#999;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .2s}
+.btn-logout:hover{border-color:#888;color:#f5f0e8}
+.wnav{display:flex;background:var(--card);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0}
+.wtab{padding:11px 16px;font-size:13px;cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:6px}
+.wtab.active{color:var(--text);border-bottom-color:var(--dark);font-weight:500}
+.wtab:hover:not(.active){background:var(--surface)}
+.bcnt{background:var(--red-bg);color:var(--red-t);font-size:10px;padding:1px 5px;border-radius:99px}
+.wbody{flex:1;overflow-y:auto;padding:1.2rem}
+.wsec{display:none}
+.wsec.active{display:block}
+.usterka-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border)}
+.usterka-row:last-child{border-bottom:none}
+.udot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.u2col{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE: KLIENT
+════════════════════════════════════════════════════ -->
+<div id="page-client" class="page active">
+  <div class="topbar">
+    <span class="logo">VELOCYCLE</span>
+    <div style="display:flex;gap:10px;align-items:center">
+      <span id="topbar-greeting" style="font-size:13px;color:#aaa;display:none"></span>
+      <button class="btn-ghost" id="topbar-auth-btn" onclick="goTo('page-auth')">Zaloguj się</button>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-bg">BIKE</div>
+    <p class="hero-tag">📍 Białystok &bull; Wypożyczalnia rowerów</p>
+    <h1 class="h1">Jedź tam,<br>gdzie <span>chcesz</span></h1>
+    <p class="hero-sub">Rowery na godziny, dni i weekendy. Wybierz rower i jedź — bez zbędnych formalności.</p>
+    <div class="search-wrap">
+      <input type="text" id="search-input" placeholder="Szukaj roweru..." oninput="renderBikes()">
+      <button onclick="renderBikes()">Szukaj</button>
+    </div>
+    <div class="hero-stats">
+      <div><div class="hs-num" id="stat-avail">—</div><div class="hs-lbl">dostępne</div></div>
+      <div><div class="hs-num">4</div><div class="hs-lbl">lokalizacje</div></div>
+      <div><div class="hs-num">24h</div><div class="hs-lbl">dostępność</div></div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <button class="fbtn active" onclick="filterBikes('all',this)">Wszystkie</button>
+    <button class="fbtn" onclick="filterBikes('city',this)">🚲 Miejskie</button>
+    <button class="fbtn" onclick="filterBikes('mountain',this)">⛰ Górskie</button>
+    <button class="fbtn" onclick="filterBikes('electric',this)">⚡ Elektryczne</button>
+    <button class="fbtn" onclick="filterBikes('cargo',this)">📦 Cargo</button>
+  </div>
+
+  <!-- SUBPAGES -->
+  <div class="cpage active" id="cp-home" style="overflow-y:auto;flex:1">
+    <div class="bikes-section">
+      <p class="sec-lbl">Dostępne rowery</p>
+      <div class="bikes-grid" id="bikes-grid"></div>
+    </div>
+
+    <div class="booking-area">
+      <div class="sel-banner" id="sel-banner">✓ <span id="sel-text"></span></div>
+      <p style="font-size:15px;font-weight:500;margin-bottom:1rem">📅 Zarezerwuj rower</p>
+      <div class="form-row fr3">
+        <div><label class="fl">Data odbioru</label><input type="date" class="fi" id="bk-from"></div>
+        <div><label class="fl">Data zwrotu</label><input type="date" class="fi" id="bk-to"></div>
+        <div><label class="fl">Lokalizacja</label>
+          <select class="fi" id="bk-loc">
+            <option>Centrum</option><option>Rynek Kościuszki</option>
+            <option>Białostoczek</option><option>Dojlidy</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row fr3">
+        <div><label class="fl">Imię i nazwisko</label><input type="text" class="fi" id="bk-name" placeholder="Jan Kowalski"></div>
+        <div><label class="fl">Telefon</label><input type="tel" class="fi" id="bk-tel" placeholder="+48 ..."></div>
+        <div><label class="fl">E-mail</label><input type="email" class="fi" id="bk-email" placeholder="jan@email.pl"></div>
+      </div>
+      <button class="btn-dark" style="width:100%;margin-top:8px;padding:12px;border-radius:10px;font-size:14px" onclick="clientReserve()">🚲 Zarezerwuj teraz</button>
+    </div>
+  </div>
+
+  <!-- Moje rezerwacje -->
+  <div class="cpage" id="cp-reservations" style="overflow-y:auto;flex:1;padding:1.4rem">
+    <p class="sec-lbl" style="margin-bottom:1rem">Moje rezerwacje</p>
+    <div id="my-res-list"></div>
+  </div>
+
+  <!-- Konto -->
+  <div class="cpage" id="cp-account" style="overflow-y:auto;flex:1">
+    <div class="profile-section" id="profile-logged-out" style="display:none">
+      <div style="text-align:center;padding:3rem 1rem">
+        <div style="font-size:48px;margin-bottom:1rem">👤</div>
+        <p style="font-size:16px;font-weight:500;margin-bottom:.5rem">Nie jesteś zalogowany</p>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:1.5rem">Zaloguj się, żeby zobaczyć swoje konto i rezerwacje.</p>
+        <button class="btn-dark" onclick="goTo('page-auth')">Zaloguj się</button>
+      </div>
+    </div>
+    <div class="profile-section" id="profile-logged-in" style="display:none">
+      <div class="profile-card">
+        <div class="profile-hdr">
+          <div class="profile-avatar" id="p-avatar">JK</div>
+          <div>
+            <div class="profile-name" id="p-name">Jan Klient</div>
+            <div class="profile-email" id="p-email">klient@velocycle.pl</div>
+          </div>
+        </div>
+        <div class="profile-body">
+          <div class="profile-stat-row">
+            <div class="pstat"><div class="pstat-val" id="p-total">0</div><div class="pstat-lbl">Rezerwacji</div></div>
+            <div class="pstat"><div class="pstat-val" id="p-active">0</div><div class="pstat-lbl">Aktywnych</div></div>
+            <div class="pstat"><div class="pstat-val" id="p-spent">0</div><div class="pstat-lbl">Zł wydanych</div></div>
+          </div>
+          <div class="fg"><label class="fl">Imię i nazwisko</label><input class="fi" type="text" id="edit-name"></div>
+          <div class="fg"><label class="fl">Telefon</label><input class="fi" type="tel" id="edit-tel"></div>
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <button class="btn-dark" onclick="saveProfile()" style="flex:1;padding:10px;border-radius:8px">Zapisz zmiany</button>
+            <button class="btn-sm d" onclick="doLogout()" style="padding:10px 16px">Wyloguj</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="client-nav">
+    <button class="cn-item active" onclick="clientNav('home',this)">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Strona główna
+    </button>
+    <button class="cn-item" onclick="clientNav('reservations',this)">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Rezerwacje
+    </button>
+    <button class="cn-item" onclick="clientNav('account',this)">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Konto
+    </button>
+  </nav>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE: AUTORYZACJA
+════════════════════════════════════════════════════ -->
+<div id="page-auth" class="page">
+  <div class="topbar">
+    <span class="logo">VELOCYCLE</span>
+    <button class="btn-ghost" onclick="goTo('page-client')">← Powrót</button>
+  </div>
+  <div class="auth-body">
+    <div class="auth-card">
+      <div class="auth-hdr">
+        <div class="auth-logo">VELOCYCLE</div>
+        <div class="auth-sub">System zarządzania wypożyczalnią</div>
+      </div>
+      <div class="auth-tabs">
+        <button class="atab active" onclick="switchAuthTab('login',this)">Zaloguj się</button>
+        <button class="atab" onclick="switchAuthTab('register',this)">Zarejestruj się</button>
+      </div>
+
+      <div class="auth-form active" id="auth-login">
+        <div class="afield"><label>E-mail</label><input type="email" id="l-email" placeholder="twoj@email.pl"></div>
+        <div class="afield"><label>Hasło</label><input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <button class="btn-auth" onclick="doLogin()">Zaloguj się</button>
+        <div class="demo-box">
+          <b>Demo — dane testowe</b><br>
+          Pracownik: <b>pracownik@velocycle.pl</b> / <b>admin123</b><br>
+          Klient: <b>klient@velocycle.pl</b> / <b>haslo123</b>
+        </div>
+        <p class="ahint">Nie masz konta? <a onclick="switchAuthTab('register',document.querySelectorAll('.atab')[1])">Zarejestruj się</a></p>
+      </div>
+
+      <div class="auth-form" id="auth-register">
+        <div class="afield"><label>Imię i nazwisko</label><input type="text" id="r-name" placeholder="Jan Kowalski"></div>
+        <div class="afield"><label>E-mail</label><input type="email" id="r-email" placeholder="twoj@email.pl"></div>
+        <div class="afield"><label>Telefon</label><input type="tel" id="r-tel" placeholder="+48 ..."></div>
+        <div class="afield"><label>Hasło</label><input type="password" id="r-pass" placeholder="min. 8 znaków"></div>
+        <div class="afield"><label>Powtórz hasło</label><input type="password" id="r-pass2" placeholder="••••••••"></div>
+        <button class="btn-auth" onclick="doRegister()">Utwórz konto</button>
+        <p class="ahint">Masz konto? <a onclick="switchAuthTab('login',document.querySelectorAll('.atab')[0])">Zaloguj się</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE: PRACOWNIK
+════════════════════════════════════════════════════ -->
+<div id="page-worker" class="page">
+  <div class="topbar">
+    <div style="display:flex;align-items:baseline;gap:6px">
+      <span class="logo">VELOCYCLE</span>
+      <span class="worker-role">panel pracownika</span>
+    </div>
+    <div class="worker-user">
+      <div class="w-avatar">MK</div>
+      <span>Marek Kowalski</span>
+      <button class="btn-logout" onclick="doLogout()">→ Wyloguj</button>
+    </div>
+  </div>
+
+  <div class="wnav">
+    <button class="wtab active" onclick="workerTab('flota',this)">🚲 Flota</button>
+    <button class="wtab" onclick="workerTab('rezerwacje',this)">📅 Rezerwacje</button>
+    <button class="wtab" onclick="workerTab('historia',this)">📊 Historia</button>
+    <button class="wtab" onclick="workerTab('usterki',this)">🔧 Usterki <span class="bcnt" id="usterki-cnt">0</span></button>
+  </div>
+
+  <div class="wbody">
+
+    <!-- FLOTA -->
+    <div id="w-flota" class="wsec active">
+      <div class="metrics">
+        <div class="metric"><div class="metric-lbl">Dostępne</div><div class="metric-val" style="color:var(--green)" id="wm-avail">0</div></div>
+        <div class="metric"><div class="metric-lbl">Wypożyczone</div><div class="metric-val" style="color:var(--blue)" id="wm-rented">0</div></div>
+        <div class="metric"><div class="metric-lbl">W serwisie</div><div class="metric-val" style="color:var(--amber)" id="wm-service">0</div></div>
+        <div class="metric"><div class="metric-lbl">Łącznie</div><div class="metric-val" id="wm-total">0</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr">
+          <span class="card-title">Lista pojazdów</span>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select class="fi" style="width:auto;font-size:12px;padding:4px 8px" id="fleet-filter" onchange="renderFleet()">
+              <option value="all">Wszystkie typy</option>
+              <option value="city">Miejski</option><option value="mountain">Górski</option>
+              <option value="electric">Elektryczny</option><option value="cargo">Cargo</option>
+            </select>
+            <button class="btn-sm p" onclick="openAddBike()">+ Dodaj rower</button>
+          </div>
+        </div>
+        <table><thead><tr><th>ID</th><th>Model</th><th>Typ</th><th>Lokalizacja</th><th>Status</th><th>Akcje</th></tr></thead>
+        <tbody id="fleet-tbody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- REZERWACJE -->
+    <div id="w-rezerwacje" class="wsec">
+      <div class="metrics">
+        <div class="metric"><div class="metric-lbl">Dziś</div><div class="metric-val" style="color:var(--blue)" id="wr-today">0</div></div>
+        <div class="metric"><div class="metric-lbl">Oczekujące</div><div class="metric-val" style="color:var(--amber)" id="wr-pending">0</div></div>
+        <div class="metric"><div class="metric-lbl">Aktywne</div><div class="metric-val" style="color:var(--green)" id="wr-active">0</div></div>
+        <div class="metric"><div class="metric-lbl">Przychód dziś</div><div class="metric-val" style="font-size:18px" id="wr-income">0 zł</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr">
+          <span class="card-title">Rezerwacje</span>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select class="fi" style="width:auto;font-size:12px;padding:4px 8px" id="res-filter-w" onchange="renderWorkerRes()">
+              <option value="all">Wszystkie statusy</option>
+              <option value="pending">Oczekujące</option>
+              <option value="active">Aktywne</option>
+              <option value="done">Zakończone</option>
+              <option value="cancelled">Anulowane</option>
+            </select>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Nr</th><th>Klient</th><th>Rower</th><th>Od</th><th>Do</th><th>Kwota</th><th>Status</th><th>Akcje</th></tr></thead>
+          <tbody id="worker-res-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- HISTORIA -->
+    <div id="w-historia" class="wsec">
+      <div class="card">
+        <div class="card-hdr">
+          <span class="card-title">Historia wypożyczeń</span>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input type="text" class="fi" style="width:170px;font-size:12px;padding:5px 8px" id="hist-search" placeholder="Szukaj klienta..." oninput="renderHistory()">
+            <select class="fi" style="width:auto;font-size:12px;padding:5px 8px" id="hist-filter" onchange="renderHistory()">
+              <option value="all">Wszystkie</option>
+              <option value="done">Zakończone</option>
+              <option value="cancelled">Anulowane</option>
+            </select>
+            <button class="btn-sm" onclick="exportHistory()">↓ Eksport CSV</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Nr</th><th>Klient</th><th>Rower</th><th>Data od</th><th>Data do</th><th>Kwota</th><th>Status</th></tr></thead>
+          <tbody id="hist-tbody"></tbody>
+        </table>
+        <div id="hist-empty" class="empty" style="display:none">Brak wyników</div>
+      </div>
+    </div>
+
+    <!-- USTERKI -->
+    <div id="w-usterki" class="wsec">
+      <div class="u2col">
+        <div>
+          <div class="card">
+            <div class="card-hdr">
+              <span class="card-title">Zgłoszone usterki</span>
+              <select class="fi" style="width:auto;font-size:12px;padding:4px 8px" id="ust-filter" onchange="renderUsterki()">
+                <option value="all">Wszystkie</option>
+                <option value="open">Otwarte</option>
+                <option value="fixed">Naprawione</option>
+              </select>
+            </div>
+            <div id="usterki-list"></div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-hdr"><span class="card-title">Zgłoś usterkę</span></div>
+            <div style="padding:14px">
+              <div class="fg"><label class="fl">Rower</label>
+                <select class="fi" id="u-bike"><option value="">-- wybierz rower --</option></select>
+              </div>
+              <div class="fg"><label class="fl">Priorytet</label>
+                <select class="fi" id="u-priority">
+                  <option value="low">Niskie</option>
+                  <option value="medium">Średnie</option>
+                  <option value="high">Pilne</option>
+                </select>
+              </div>
+              <div class="fg"><label class="fl">Opis usterki</label>
+                <textarea class="fi" id="u-desc" placeholder="Opisz problem..."></textarea>
+              </div>
+              <button class="btn-sm p" style="width:100%;padding:9px" onclick="addUsterka()">Zgłoś usterkę</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /wbody -->
+</div><!-- /page-worker -->
+
+<!-- MODAL: dodaj/edytuj rower -->
+<div class="modal-overlay" id="modal-bike">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title" id="modal-bike-title">Dodaj rower</span>
+      <button class="modal-close" onclick="closeModal('modal-bike')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-bike-id">
+      <div class="fg"><label class="fl">Model</label><input class="fi" id="eb-name" placeholder="np. CityRider Pro"></div>
+      <div class="form-row fr2">
+        <div><label class="fl">Typ</label>
+          <select class="fi" id="eb-type">
+            <option value="city">Miejski</option><option value="mountain">Górski</option>
+            <option value="electric">Elektryczny</option><option value="cargo">Cargo</option>
+          </select>
+        </div>
+        <div><label class="fl">Cena (zł/h)</label><input class="fi" type="number" id="eb-price" min="1" placeholder="15"></div>
+      </div>
+      <div class="form-row fr2">
+        <div><label class="fl">Lokalizacja</label>
+          <select class="fi" id="eb-loc">
+            <option>Centrum</option><option>Rynek Kościuszki</option>
+            <option>Białostoczek</option><option>Dojlidy</option><option>Serwis</option>
+          </select>
+        </div>
+        <div><label class="fl">Status</label>
+          <select class="fi" id="eb-status">
+            <option value="avail">Dostępny</option>
+            <option value="rented">Wypożyczony</option>
+            <option value="service">W serwisie</option>
+            <option value="unavail">Niedostępny</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-sm" onclick="closeModal('modal-bike')">Anuluj</button>
+      <button class="btn-sm p" onclick="saveBike()">Zapisz</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: potwierdź anulowanie -->
+<div class="modal-overlay" id="modal-cancel">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title">Anuluj rezerwację</span>
+      <button class="modal-close" onclick="closeModal('modal-cancel')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:14px;margin-bottom:8px">Czy na pewno chcesz anulować tę rezerwację?</p>
+      <p style="font-size:13px;color:var(--muted)" id="cancel-desc"></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-sm" onclick="closeModal('modal-cancel')">Nie</button>
+      <button class="btn-sm d" onclick="confirmCancel()">Tak, anuluj</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<style>
+.modal-overlay{display:none;position:fixed;inset:0;background:#0007;z-index:500;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card, #fff);border-radius:14px;width:100%;max-width:440px;overflow:hidden}
+.modal-hdr{background:#1a1a1a;padding:1.2rem 1.4rem;display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#c8b97a;letter-spacing:.5px}
+.modal-close{background:none;border:none;color:#888;font-size:22px;cursor:pointer;line-height:1}
+.modal-close:hover{color:#f5f0e8}
+.modal-body{padding:1.4rem}
+.modal-foot{padding:0 1.4rem 1.4rem;display:flex;gap:8px;justify-content:flex-end}
+.fg{margin-bottom:12px}
+.fl{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#888;display:block;margin-bottom:4px}
+.fi{padding:9px 11px;border:1px solid #e0ddd5;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;background:#fff;color:#1a1a1a;outline:none;transition:border .15s;width:100%}
+.fi:focus{border-color:#c8b97a}
+.form-row{display:grid;gap:10px;margin-bottom:10px}
+.fr2{grid-template-columns:1fr 1fr}
+.fr3{grid-template-columns:1fr 1fr 1fr}
+.u2col{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+textarea.fi{resize:vertical;min-height:80px}
+.usterka-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #e0ddd5}
+.usterka-row:last-child{border-bottom:none}
+.udot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.empty{text-align:center;padding:3rem 1rem;color:#888;font-size:14px}
+</style>
+
+<script>
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+const USERS = {
+  'pracownik@velocycle.pl': {pass:'admin123', role:'worker', name:'Marek Kowalski', tel:'+48 500 100 200'},
+  'klient@velocycle.pl':    {pass:'haslo123', role:'client', name:'Jan Klient',     tel:'+48 600 200 300'}
+};
+
+let currentUser = null; // null | user object
+let selectedBike = null;
+let currentFilter = 'all';
+let cancelTargetId = null;
+
+let bikes = [
+  {id:1, name:'CityRider Pro',  type:'city',     emoji:'🚲', price:15, status:'avail',   loc:'Centrum'},
+  {id:2, name:'TrailBlazer X',  type:'mountain',  emoji:'🚵', price:22, status:'avail',   loc:'Białostoczek'},
+  {id:3, name:'E-Speed 500',    type:'electric',  emoji:'⚡', price:35, status:'service', loc:'Serwis'},
+  {id:4, name:'CargoMax',       type:'cargo',     emoji:'📦', price:28, status:'unavail', loc:'Dojlidy'},
+  {id:5, name:'UrbanFlow',      type:'city',     emoji:'🚲', price:12, status:'avail',   loc:'Rynek Kościuszki'},
+  {id:6, name:'Summit 27',      type:'mountain',  emoji:'🏔', price:25, status:'avail',   loc:'Centrum'},
+  {id:7, name:'E-Cruiser',      type:'electric',  emoji:'⚡', price:40, status:'rented',  loc:'Centrum'},
+  {id:8, name:'FamilyCargo',    type:'cargo',     emoji:'🛒', price:30, status:'avail',   loc:'Dojlidy'}
+];
+let nextBikeId = 9;
+
+let reservations = [
+  {id:'Z-101', client:'Anna Nowak',    email:'anna@x.pl',   bikeId:7, from:'2026-05-11', to:'2026-05-11', loc:'Centrum',         status:'active',    price:120},
+  {id:'Z-102', client:'Piotr Lis',     email:'piotr@x.pl',  bikeId:2, from:'2026-05-11', to:'2026-05-12', loc:'Białostoczek',    status:'active',    price:176},
+  {id:'Z-103', client:'Katarzyna Maj', email:'k@x.pl',      bikeId:1, from:'2026-05-11', to:'2026-05-11', loc:'Centrum',         status:'pending',   price:60},
+  {id:'Z-104', client:'Tomasz Dąb',    email:'t@x.pl',      bikeId:5, from:'2026-05-11', to:'2026-05-13', loc:'Rynek Kościuszki',status:'pending',   price:72},
+  {id:'Z-098', client:'Jan Kowalski',  email:'jan@x.pl',    bikeId:6, from:'2026-05-09', to:'2026-05-10', loc:'Centrum',         status:'done',      price:100},
+  {id:'Z-097', client:'Maria W.',      email:'m@x.pl',      bikeId:8, from:'2026-05-08', to:'2026-05-09', loc:'Dojlidy',         status:'done',      price:120},
+  {id:'Z-096', client:'Adam Wróbel',   email:'a@x.pl',      bikeId:1, from:'2026-05-07', to:'2026-05-08', loc:'Centrum',         status:'cancelled', price:60},
+];
+let nextResId = 105;
+
+let usterki = [
+  {id:'U-01', bikeId:3, bikeName:'E-Speed 500',  desc:'Uszkodzony hamulec przedni', priority:'high',   status:'open'},
+  {id:'U-02', bikeId:6, bikeName:'Summit 27',     desc:'Przebita opona tylna',       priority:'medium', status:'open'},
+  {id:'U-03', bikeId:4, bikeName:'CargoMax',      desc:'Luz w kierownicy',           priority:'medium', status:'open'},
+  {id:'U-04', bikeId:5, bikeName:'UrbanFlow',     desc:'Brak światła tylnego',       priority:'low',    status:'fixed'},
+];
+let nextUstId = 5;
+
+const today = new Date().toISOString().split('T')[0];
+const tomorrow = new Date(Date.now()+864e5).toISOString().split('T')[0];
+const typeLabel = {city:'Miejski', mountain:'Górski', electric:'Elektryczny', cargo:'Cargo'};
+const typeEmoji = {city:'🚲', mountain:'🚵', electric:'⚡', cargo:'🛒'};
+
+// ════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════
+function goTo(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function clientNav(name, btn) {
+  document.querySelectorAll('.cpage').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.cn-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('cp-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='reservations') renderMyReservations();
+  if(name==='account') renderProfile();
+}
+
+function workerTab(name, btn) {
+  document.querySelectorAll('.wsec').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.wtab').forEach(b => b.classList.remove('active'));
+  document.getElementById('w-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='flota')      { renderFleet(); renderFleetMetrics(); }
+  if(name==='rezerwacje') { renderWorkerRes(); renderResMetrics(); }
+  if(name==='historia')   renderHistory();
+  if(name==='usterki')    renderUsterki();
+}
+
+// ════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ════════════════════════════════════════
+// MODAL
+// ════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ════════════════════════════════════════
+// AUTH
+// ════════════════════════════════════════
+function doLogin() {
+  const email = document.getElementById('l-email').value.trim();
+  const pass  = document.getElementById('l-pass').value;
+  const user  = USERS[email];
+  if (!user || user.pass !== pass) { showToast('❌ Błędny e-mail lub hasło'); return; }
+  currentUser = {...user, email};
+  if (user.role === 'worker') {
+    goTo('page-worker');
+    renderFleet(); renderFleetMetrics(); renderUsterkiCount();
+    showToast('✓ Zalogowano jako pracownik');
+  } else {
+    updateTopbar();
+    goTo('page-client');
+    showToast('✓ Witaj, ' + user.name.split(' ')[0] + '!');
+  }
+}
+
+function doRegister() {
+  const name  = document.getElementById('r-name').value.trim();
+  const email = document.getElementById('r-email').value.trim();
+  const tel   = document.getElementById('r-tel').value.trim();
+  const pass  = document.getElementById('r-pass').value;
+  const pass2 = document.getElementById('r-pass2').value;
+  if (!name || !email || !pass) { showToast('❌ Wypełnij wszystkie pola'); return; }
+  if (pass !== pass2)           { showToast('❌ Hasła nie są zgodne'); return; }
+  if (pass.length < 8)          { showToast('❌ Hasło min. 8 znaków'); return; }
+  USERS[email] = {pass, role:'client', name, tel};
+  showToast('✓ Konto utworzone — zaloguj się');
+  switchAuthTab('login', document.querySelectorAll('.atab')[0]);
+}
+
+function doLogout() {
+  currentUser = null;
+  updateTopbar();
+  goTo('page-auth');
+  showToast('Wylogowano');
+}
+
+function updateTopbar() {
+  const greeting = document.getElementById('topbar-greeting');
+  const btn      = document.getElementById('topbar-auth-btn');
+  if (currentUser) {
+    greeting.textContent = 'Cześć, ' + currentUser.name.split(' ')[0];
+    greeting.style.display = 'inline';
+    btn.textContent = 'Wyloguj';
+    btn.onclick = doLogout;
+  } else {
+    greeting.style.display = 'none';
+    btn.textContent = 'Zaloguj się';
+    btn.onclick = () => goTo('page-auth');
+  }
+}
+
+function switchAuthTab(name, btn) {
+  document.querySelectorAll('.atab').forEach(t  => t.classList.remove('active'));
+  document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('auth-'+name).classList.add('active');
+}
+
+// ════════════════════════════════════════
+// CLIENT — BIKES
+// ════════════════════════════════════════
+function filterBikes(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBikes();
+}
+
+function renderBikes() {
+  const grid   = document.getElementById('bikes-grid');
+  const search = (document.getElementById('search-input')?.value || '').toLowerCase();
+  const avail  = bikes.filter(b => b.status === 'avail');
+  document.getElementById('stat-avail').textContent = avail.length;
+
+  const filtered = bikes.filter(b => {
+    const matchType   = currentFilter === 'all' || b.type === currentFilter;
+    const matchSearch = b.name.toLowerCase().includes(search);
+    return matchType && matchSearch;
+  });
+
+  grid.innerHTML = '';
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1">Brak rowerów spełniających kryteria</div>';
+    return;
+  }
+
+  filtered.forEach(b => {
+    const isAvail = b.status === 'avail';
+    const card = document.createElement('div');
+    card.className = 'bike-card' + (selectedBike===b.id?' sel':'') + (!isAvail?' unavail':'');
+    card.onclick = () => selectBike(b);
+    card.innerHTML = `
+      <div class="bike-img ${b.type}">${b.emoji}</div>
+      <div class="bike-info">
+        <div class="bike-name">${b.name}</div>
+        <div class="bike-type">${typeLabel[b.type]}</div>
+        <div class="bike-footer">
+          <div class="bike-price">${b.price} <small>zł/h</small></div>
+          <div class="avail-dot ${isAvail?'yes':'no'}" title="${isAvail?'Dostępny':'Niedostępny'}"></div>
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+function selectBike(b) {
+  if (b.status !== 'avail') { showToast('❌ Ten rower jest niedostępny'); return; }
+  selectedBike = b.id;
+  renderBikes();
+  const banner = document.getElementById('sel-banner');
+  document.getElementById('sel-text').textContent = `Wybrany: ${b.name} — ${b.price} zł/h`;
+  banner.classList.add('show');
+  // prefill name/email if logged in
+  if (currentUser) {
+    document.getElementById('bk-name').value  = currentUser.name  || '';
+    document.getElementById('bk-email').value = currentUser.email || '';
+    document.getElementById('bk-tel').value   = currentUser.tel   || '';
+  }
+}
+
+function clientReserve() {
+  if (!selectedBike)  { showToast('❌ Najpierw wybierz rower');   return; }
+  const from = document.getElementById('bk-from').value;
+  const to   = document.getElementById('bk-to').value;
+  const name = document.getElementById('bk-name').value.trim();
+  const tel  = document.getElementById('bk-tel').value.trim();
+  const email= document.getElementById('bk-email').value.trim();
+  const loc  = document.getElementById('bk-loc').value;
+  if (!from || !to)   { showToast('❌ Podaj daty rezerwacji');     return; }
+  if (from > to)      { showToast('❌ Data zwrotu przed odbiorem'); return; }
+  if (!name || !tel)  { showToast('❌ Wypełnij imię i telefon');   return; }
+
+  const bike  = bikes.find(b => b.id === selectedBike);
+  const days  = Math.max(1, Math.ceil((new Date(to)-new Date(from))/864e5)+1);
+  const price = bike.price * 8 * days; // 8h/dzień
+  const id    = 'Z-' + (nextResId++);
+
+  reservations.push({id, client:name, email, bikeId:bike.id, from, to, loc, status:'pending', price});
+  bike.status = 'rented';
+
+  selectedBike = null;
+  document.getElementById('sel-banner').classList.remove('show');
+  renderBikes();
+  showToast(`✓ Rezerwacja ${id} złożona!`);
+}
+
+// ════════════════════════════════════════
+// CLIENT — MOJE REZERWACJE
+// ════════════════════════════════════════
+function renderMyReservations() {
+  const list = document.getElementById('my-res-list');
+  const mine = currentUser
+    ? reservations.filter(r => r.email === currentUser.email || r.client === currentUser.name)
+    : [];
+
+  if (!mine.length) {
+    list.innerHTML = '<div class="empty">Brak rezerwacji.<br>Zarezerwuj rower na stronie głównej!</div>';
+    return;
+  }
+
+  const statusBadge = {
+    pending:'<span class="badge b-warn">Oczekuje</span>',
+    active:'<span class="badge b-info">Aktywna</span>',
+    done:'<span class="badge b-ok">Zakończona</span>',
+    cancelled:'<span class="badge b-err">Anulowana</span>'
+  };
+
+  list.innerHTML = mine.slice().reverse().map(r => {
+    const bike = bikes.find(b => b.id === r.bikeId);
+    const canCancel = r.status === 'pending' || r.status === 'active';
+    return `<div class="mrc">
+      <div class="mrc-top">
+        <div>
+          <div class="mrc-name">${bike ? bike.emoji+' '+bike.name : 'Rower'}</div>
+          <div class="mrc-meta">Nr rezerwacji: <b>${r.id}</b> &bull; ${r.loc}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          ${statusBadge[r.status]||''}
+          ${canCancel ? `<button class="btn-sm d" onclick="clientCancelRes('${r.id}')">Anuluj</button>` : ''}
+        </div>
+      </div>
+      <div class="mrc-detail">
+        <span>Od: <b>${r.from}</b></span>
+        <span>Do: <b>${r.to}</b></span>
+        <span>Kwota: <b>${r.price} zł</b></span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function clientCancelRes(id) {
+  const r = reservations.find(r => r.id === id);
+  if (!r) return;
+  r.status = 'cancelled';
+  const bike = bikes.find(b => b.id === r.bikeId);
+  if (bike) bike.status = 'avail';
+  renderMyReservations();
+  renderBikes();
+  showToast('✓ Rezerwacja anulowana');
+}
+
+// ════════════════════════════════════════
+// CLIENT — PROFIL
+// ════════════════════════════════════════
+function renderProfile() {
+  const loggedOut = document.getElementById('profile-logged-out');
+  const loggedIn  = document.getElementById('profile-logged-in');
+  if (!currentUser) {
+    loggedOut.style.display = 'block';
+    loggedIn.style.display  = 'none';
+    return;
+  }
+  loggedOut.style.display = 'none';
+  loggedIn.style.display  = 'block';
+
+  const initials = currentUser.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('p-avatar').textContent = initials;
+  document.getElementById('p-name').textContent   = currentUser.name;
+  document.getElementById('p-email').textContent  = currentUser.email;
+  document.getElementById('edit-name').value = currentUser.name;
+  document.getElementById('edit-tel').value  = currentUser.tel || '';
+
+  const mine    = reservations.filter(r => r.email === currentUser.email || r.client === currentUser.name);
+  const active  = mine.filter(r => r.status==='active'||r.status==='pending');
+  const spent   = mine.filter(r=>r.status==='done').reduce((s,r)=>s+r.price,0);
+  document.getElementById('p-total').textContent  = mine.length;
+  document.getElementById('p-active').textContent = active.length;
+  document.getElementById('p-spent').textContent  = spent;
+}
+
+function saveProfile() {
+  if (!currentUser) return;
+  currentUser.name = document.getElementById('edit-name').value.trim() || currentUser.name;
+  currentUser.tel  = document.getElementById('edit-tel').value.trim();
+  USERS[currentUser.email].name = currentUser.name;
+  USERS[currentUser.email].tel  = currentUser.tel;
+  updateTopbar();
+  renderProfile();
+  showToast('✓ Profil zaktualizowany');
+}
+
+// ════════════════════════════════════════
+// WORKER — FLOTA
+// ════════════════════════════════════════
+function renderFleetMetrics() {
+  document.getElementById('wm-avail').textContent   = bikes.filter(b=>b.status==='avail').length;
+  document.getElementById('wm-rented').textContent  = bikes.filter(b=>b.status==='rented').length;
+  document.getElementById('wm-service').textContent = bikes.filter(b=>b.status==='service').length;
+  document.getElementById('wm-total').textContent   = bikes.length;
+}
+
+function renderFleet() {
+  const filterVal = document.getElementById('fleet-filter')?.value || 'all';
+  const tbody = document.getElementById('fleet-tbody');
+  const statusBadge = {avail:'<span class="badge b-ok">Dostępny</span>', rented:'<span class="badge b-info">Wypożyczony</span>', service:'<span class="badge b-warn">W serwisie</span>', unavail:'<span class="badge b-err">Niedostępny</span>'};
+  const filtered = bikes.filter(b => filterVal==='all' || b.type===filterVal);
+  tbody.innerHTML = filtered.map(b => `
+    <tr>
+      <td style="font-family:monospace;font-size:12px">#R-00${b.id}</td>
+      <td>${b.emoji} ${b.name}</td>
+      <td>${typeLabel[b.type]}</td>
+      <td>${b.loc}</td>
+      <td>${statusBadge[b.status]||''}</td>
+      <td style="display:flex;gap:6px">
+        <button class="btn-sm" onclick="openEditBike(${b.id})">Edytuj</button>
+        <button class="btn-sm d" onclick="deleteBike(${b.id})">Usuń</button>
+      </td>
+    </tr>`).join('');
+  renderFleetMetrics();
+}
+
+function openAddBike() {
+  document.getElementById('edit-bike-id').value = '';
+  document.getElementById('eb-name').value  = '';
+  document.getElementById('eb-price').value = '';
+  document.getElementById('modal-bike-title').textContent = 'Dodaj rower';
+  openModal('modal-bike');
+}
+
+function openEditBike(id) {
+  const b = bikes.find(b=>b.id===id);
+  if (!b) return;
+  document.getElementById('edit-bike-id').value = id;
+  document.getElementById('eb-name').value    = b.name;
+  document.getElementById('eb-price').value   = b.price;
+  document.getElementById('eb-type').value    = b.type;
+  document.getElementById('eb-loc').value     = b.loc;
+  document.getElementById('eb-status').value  = b.status;
+  document.getElementById('modal-bike-title').textContent = 'Edytuj rower';
+  openModal('modal-bike');
+}
+
+function saveBike() {
+  const id    = document.getElementById('edit-bike-id').value;
+  const name  = document.getElementById('eb-name').value.trim();
+  const price = parseInt(document.getElementById('eb-price').value);
+  const type  = document.getElementById('eb-type').value;
+  const loc   = document.getElementById('eb-loc').value;
+  const status= document.getElementById('eb-status').value;
+  if (!name || !price) { showToast('❌ Wypełnij model i cenę'); return; }
+
+  if (id) {
+    const b = bikes.find(b=>b.id===parseInt(id));
+    if (b) { b.name=name; b.price=price; b.type=type; b.loc=loc; b.status=status; b.emoji=typeEmoji[type]; }
+    showToast('✓ Rower zaktualizowany');
+  } else {
+    bikes.push({id:nextBikeId++, name, type, emoji:typeEmoji[type], price, status, loc});
+    showToast('✓ Rower dodany');
+  }
+  closeModal('modal-bike');
+  renderFleet();
+  renderBikes();
+}
+
+function deleteBike(id) {
+  if (!confirm('Usunąć rower z floty?')) return;
+  bikes = bikes.filter(b=>b.id!==id);
+  renderFleet();
+  renderBikes();
+  showToast('✓ Rower usunięty');
+}
+
+// ════════════════════════════════════════
+// WORKER — REZERWACJE
+// ════════════════════════════════════════
+function renderResMetrics() {
+  const todayRes = reservations.filter(r=>r.from===today);
+  document.getElementById('wr-today').textContent  = todayRes.length;
+  document.getElementById('wr-pending').textContent= reservations.filter(r=>r.status==='pending').length;
+  document.getElementById('wr-active').textContent = reservations.filter(r=>r.status==='active').length;
+  const income = reservations.filter(r=>r.status==='done'&&r.from===today).reduce((s,r)=>s+r.price,0);
+  document.getElementById('wr-income').textContent = income + ' zł';
+}
+
+function renderWorkerRes() {
+  const filterVal = document.getElementById('res-filter-w')?.value || 'all';
+  const tbody = document.getElementById('worker-res-tbody');
+  const statusBadge = {pending:'<span class="badge b-warn">Oczekuje</span>', active:'<span class="badge b-info">Aktywna</span>', done:'<span class="badge b-ok">Zakończona</span>', cancelled:'<span class="badge b-err">Anulowana</span>'};
+  const filtered = reservations.filter(r => filterVal==='all' || r.status===filterVal);
+
+  tbody.innerHTML = filtered.map(r => {
+    const bike = bikes.find(b=>b.id===r.bikeId);
+    const actions = [];
+    if (r.status==='pending') {
+      actions.push(`<button class="btn-sm p" onclick="workerApprove('${r.id}')">Zatwierdź</button>`);
+      actions.push(`<button class="btn-sm d" onclick="workerCancelPrompt('${r.id}')">Anuluj</button>`);
+    }
+    if (r.status==='active') {
+      actions.push(`<button class="btn-sm" onclick="workerComplete('${r.id}')">Zakończ</button>`);
+      actions.push(`<button class="btn-sm d" onclick="workerCancelPrompt('${r.id}')">Anuluj</button>`);
+    }
+    return `<tr>
+      <td style="font-family:monospace;font-size:12px">#${r.id}</td>
+      <td>${r.client}</td>
+      <td>${bike?bike.emoji+' '+bike.name:'—'}</td>
+      <td>${r.from}</td>
+      <td>${r.to}</td>
+      <td>${r.price} zł</td>
+      <td>${statusBadge[r.status]||''}</td>
+      <td style="display:flex;gap:5px;flex-wrap:wrap">${actions.join('')}</td>
+    </tr>`;
+  }).join('');
+
+  if (!filtered.length) tbody.innerHTML = '<tr><td colspan="8" class="empty">Brak rezerwacji</td></tr>';
+  renderResMetrics();
+}
+
+function workerApprove(id) {
+  const r = reservations.find(r=>r.id===id);
+  if (r) r.status = 'active';
+  renderWorkerRes(); showToast('✓ Rezerwacja zatwierdzona');
+}
+
+function workerComplete(id) {
+  const r = reservations.find(r=>r.id===id);
+  if (!r) return;
+  r.status = 'done';
+  const bike = bikes.find(b=>b.id===r.bikeId);
+  if (bike) bike.status = 'avail';
+  renderWorkerRes(); renderFleet(); renderBikes();
+  showToast('✓ Rezerwacja zakończona, rower zwrócony');
+}
+
+function workerCancelPrompt(id) {
+  cancelTargetId = id;
+  const r    = reservations.find(r=>r.id===id);
+  const bike = bikes.find(b=>b.id===r?.bikeId);
+  document.getElementById('cancel-desc').textContent = r ? `#${r.id} — ${r.client} — ${bike?.name||''}` : '';
+  openModal('modal-cancel');
+}
+
+function confirmCancel() {
+  const r = reservations.find(r=>r.id===cancelTargetId);
+  if (r) {
+    r.status = 'cancelled';
+    const bike = bikes.find(b=>b.id===r.bikeId);
+    if (bike && bike.status==='rented') bike.status = 'avail';
+  }
+  closeModal('modal-cancel');
+  renderWorkerRes(); renderFleet(); renderBikes();
+  showToast('✓ Rezerwacja anulowana');
+}
+
+// ════════════════════════════════════════
+// WORKER — HISTORIA
+// ════════════════════════════════════════
+function renderHistory() {
+  const search = (document.getElementById('hist-search')?.value||'').toLowerCase();
+  const filter = document.getElementById('hist-filter')?.value||'all';
+  const tbody  = document.getElementById('hist-tbody');
+  const empty  = document.getElementById('hist-empty');
+
+  const statusBadge = {done:'<span class="badge b-ok">Zakończona</span>', cancelled:'<span class="badge b-err">Anulowana</span>'};
+
+  const finished = reservations.filter(r => {
+    const matchStatus = filter==='all' ? (r.status==='done'||r.status==='cancelled') : r.status===filter;
+    const matchSearch = r.client.toLowerCase().includes(search);
+    return matchStatus && matchSearch;
+  });
+
+  tbody.innerHTML = finished.map(r => {
+    const bike = bikes.find(b=>b.id===r.bikeId);
+    return `<tr>
+      <td style="font-family:monospace;font-size:12px">#${r.id}</td>
+      <td>${r.client}</td>
+      <td>${bike?bike.emoji+' '+bike.name:'—'}</td>
+      <td>${r.from}</td>
+      <td>${r.to}</td>
+      <td>${r.price} zł</td>
+      <td>${statusBadge[r.status]||''}</td>
+    </tr>`;
+  }).join('');
+
+  empty.style.display = finished.length ? 'none' : 'block';
+}
+
+function exportHistory() {
+  const rows = reservations.filter(r=>r.status==='done'||r.status==='cancelled');
+  const csv  = ['Nr,Klient,Email,Data od,Data do,Kwota,Status',
+    ...rows.map(r=>`${r.id},${r.client},${r.email},${r.from},${r.to},${r.price},${r.status}`)
+  ].join('\n');
+  const a  = document.createElement('a');
+  a.href   = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'historia_velocycle.csv';
+  a.click();
+}
+
+// ════════════════════════════════════════
+// WORKER — USTERKI
+// ════════════════════════════════════════
+function renderUsterkiCount() {
+  const open = usterki.filter(u=>u.status==='open').length;
+  document.getElementById('usterki-cnt').textContent = open;
+}
+
+function renderUsterki() {
+  const filter = document.getElementById('ust-filter')?.value || 'all';
+  const list   = document.getElementById('usterki-list');
+  const dotColor = {high:'#E24B4A', medium:'#BA7517', low:'#639922', fixed:'#ccc'};
+  const prioLabel = {high:'Pilne', medium:'Średnie', low:'Niskie'};
+  const badgeCls  = {high:'b-err', medium:'b-warn', low:'b-ok', fixed:'b-gray'};
+
+  // populate bike select
+  const sel = document.getElementById('u-bike');
+  if (sel && sel.options.length <= 1) {
+    bikes.forEach(b => {
+      const o = document.createElement('option');
+      o.value = b.id; o.textContent = `#R-00${b.id} ${b.name}`;
+      sel.appendChild(o);
+    });
+  }
+
+  const filtered = usterki.filter(u => filter==='all' || u.status===filter);
+  list.innerHTML = filtered.map(u => `
+    <div class="usterka-row">
+      <div class="udot" style="background:${u.status==='fixed'?dotColor.fixed:dotColor[u.priority]}"></div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500">${u.id} — ${u.bikeName}</div>
+        <div style="font-size:12px;color:var(--muted)">${u.desc}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+        <span class="badge ${u.status==='fixed'?'b-ok':badgeCls[u.priority]}">${u.status==='fixed'?'Naprawione':prioLabel[u.priority]}</span>
+        ${u.status==='open'?`<button class="btn-sm" onclick="markFixed('${u.id}')">Napraw</button>`:''}
+      </div>
+    </div>`).join('');
+
+  if (!filtered.length) list.innerHTML = '<div class="empty">Brak usterek</div>';
+  renderUsterkiCount();
+}
+
+function addUsterka() {
+  const bikeId = parseInt(document.getElementById('u-bike').value);
+  const priority = document.getElementById('u-priority').value;
+  const desc   = document.getElementById('u-desc').value.trim();
+  if (!bikeId || !desc) { showToast('❌ Wybierz rower i opisz usterkę'); return; }
+  const bike = bikes.find(b=>b.id===bikeId);
+  usterki.push({id:'U-0'+nextUstId++, bikeId, bikeName:bike?.name||'', desc, priority, status:'open'});
+  document.getElementById('u-desc').value = '';
+  document.getElementById('u-bike').value = '';
+  renderUsterki();
+  showToast('✓ Usterka zgłoszona');
+}
+
+function markFixed(id) {
+  const u = usterki.find(u=>u.id===id);
+  if (u) u.status = 'fixed';
+  renderUsterki();
+  showToast('✓ Oznaczono jako naprawione');
+}
+
+// ════════════════════════════════════════
+// STYLE — missing inline classes
+// ════════════════════════════════════════
+const extraStyle = document.createElement('style');
+extraStyle.textContent = `
+.mrc{background:#fff;border:1px solid #e0ddd5;border-radius:12px;padding:14px;margin-bottom:10px}
+.mrc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.mrc-name{font-weight:500;font-size:14px}
+.mrc-meta{font-size:12px;color:#888;margin-top:2px}
+.mrc-detail{display:flex;gap:16px;font-size:12px;color:#888;border-top:1px solid #e0ddd5;padding-top:8px;margin-top:8px;flex-wrap:wrap}
+.mrc-detail span b{color:#1a1a1a}
+.b-gray{background:#f0ede6;color:#888}
+`;
+document.head.appendChild(extraStyle);
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+document.getElementById('bk-from').value = today;
+document.getElementById('bk-to').value   = tomorrow;
+renderBikes();
+</script>
