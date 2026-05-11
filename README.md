@@ -38,14 +38,6 @@ Podstawowy ciąg zdarzeń
 
 **c) Klient anuluje formularz** — brak zmian w systemie, powrót do listy rowerów.
 
- Zależności czasowe
-
-| Parametr | Wartość |
-|---|---|
-| Częstotliwość | ~5–10 razy dziennie |
-| Spiętrzenia | Weekendy, sezon letni |
-| Typowy czas realizacji | ~1–2 minuty |
-
 ### Wartości uzyskiwane przez aktorów
 
 **Klient** — potwierdzenie z numerem rezerwacji; wpis w zakładce „Moje rezerwacje".
@@ -81,12 +73,7 @@ a) Pracownik anuluje rezerwację (krok 2)** — `<<include>>` Anuluj rezerwację
 
 b) Brak rezerwacji do przetworzenia** — system wyświetla pustą listę z komunikatem.
 
- Zależności czasowe
 
-
-| Częstotliwość | ~10–20 operacji dziennie |
-| Spiętrzenia | Poranki i wieczory w sezonie |
-| Typowy czas realizacji | ~1 minuta na operację |
 
 ### Wartości uzyskiwane przez aktorów
 
@@ -121,12 +108,6 @@ b) Naprawa niemożliwa (krok 6)** — mistrz zgłasza brak możliwości naprawy;
 
 c) Pracownik odrzuca zgłoszenie jako bezzasadne (krok 2)** — zmienia status na `zamknięte` bez angażowania mistrza.
 
-Zależności czasowe
-
-| Częstotliwość | ~1–3 zgłoszenia dziennie |
-| Spiętrzenia | Po intensywnym weekendzie, po sezonie |
-| Typowy czas realizacji | Kilka godzin do kilku dni |
-| Maks. czas realizacji | Zależny od dostępności części |
 
  Wartości uzyskiwane przez aktorów
 
