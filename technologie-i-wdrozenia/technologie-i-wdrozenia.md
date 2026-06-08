@@ -14,7 +14,6 @@ Do wykonania interfejsu użytkownika można wykorzystać:
 * opcjonalnie framework React.
 
 Frontend odpowiada za prezentację danych użytkownikowi, obsługę formularzy, wyświetlanie dostępnych rowerów, rezerwacji, historii wypożyczeń, panelu pracownika oraz panelu serwisowego.
-
 ## 3. Backend
 
 Część serwerowa systemu może zostać wykonana z użyciem jednej z następujących technologii:
