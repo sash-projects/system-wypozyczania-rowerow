@@ -1,147 +1,149 @@
 # Opisy przypadków użycia systemu VELOCYCLE
 
-## 1. Zarezerwuj rower
+## 1. Aktorzy systemu
+
+## Klient niezalogowany
+
+Klient niezalogowany to użytkownik, który nie posiada aktywnej sesji w systemie. Może przeglądać dostępne rowery, filtrować i wyszukiwać rowery oraz przejść do rejestracji lub logowania.
+
+## Klient zalogowany
+
+Klient zalogowany to użytkownik posiadający konto w systemie. Może rezerwować rowery, anulować swoje rezerwacje, przeglądać historię, edytować profil oraz zgłaszać usterki.
+
+## Pracownik
+
+Pracownik to osoba obsługująca wypożyczalnię. Zarządza flotą rowerów, rezerwacjami, historią wypożyczeń oraz zgłoszeniami usterek.
+
+## Mistrz serwisowy
+
+Mistrz serwisowy to osoba odpowiedzialna za naprawę rowerów. Przyjmuje zlecenia serwisowe, wykonuje naprawy oraz zgłasza zakończenie prac.
+
+## System płatności
+
+System płatności to zewnętrzny aktor odpowiedzialny za autoryzację płatności, obsługę kaucji, potwierdzanie transakcji oraz realizację zwrotów.
+
+# 2. Dokładne opisy wybranych przypadków użycia
+
+## Przypadek użycia: Zarezerwuj rower
 
 ### Aktor główny
-- Klient zalogowany
+
+Klient zalogowany.
 
 ### Aktorzy pomocniczy
-- System płatności
 
-### Opis
-Klient rezerwuje dostępny rower poprzez system VELOCYCLE. Rezerwacja zostaje zapisana po poprawnym wykonaniu płatności.
+System płatności.
 
-### Scenariusz podstawowy
-1. Klient loguje się do systemu.
-2. System wyświetla listę dostępnych rowerów.
-3. Klient filtruje lub wyszukuje rower.
-4. Klient wybiera rower.
-5. System sprawdza dostępność roweru.
-6. Klient rozpoczyna proces rezerwacji.
-7. System płatności autoryzuje płatność.
-8. System zapisuje rezerwację.
-9. Klient otrzymuje potwierdzenie rezerwacji.
+### Warunki wstępne
 
-### Scenariusze alternatywne
-- Wybrany rower jest już zarezerwowany.
-- Płatność została odrzucona.
-- Klient anuluje operację przed zakończeniem rezerwacji.
+* Klient posiada konto w systemie.
+* Klient jest zalogowany.
+* W systemie istnieje co najmniej jeden dostępny rower.
+* System płatności jest dostępny.
 
-### Częstotliwość
-Bardzo często, codziennie.
+### Przebieg podstawowy
 
-### Czas realizacji
-Typowo 1–3 minuty.
+1. Klient przechodzi do listy dostępnych rowerów.
+2. System wyświetla rowery dostępne w wybranej lokalizacji.
+3. Klient wybiera rower.
+4. Klient wybiera datę odbioru, datę zwrotu oraz lokalizację.
+5. System sprawdza dostępność wybranego roweru.
+6. System wyświetla podsumowanie rezerwacji oraz informację o wymaganej kaucji.
+7. Klient potwierdza rezerwację.
+8. System przekazuje dane płatności do systemu płatności.
+9. System płatności autoryzuje płatność lub kaucję.
+10. System tworzy rezerwację.
+11. System zmienia status roweru na wypożyczony lub zarezerwowany.
+12. System wyświetla klientowi potwierdzenie rezerwacji.
 
-### Wartość dla aktora
-Możliwość szybkiego wypożyczenia roweru online bez kontaktu z obsługą.
+### Przebieg alternatywny
 
+* Jeśli rower nie jest dostępny, system informuje klienta i proponuje wybór innego roweru.
+* Jeśli płatność nie zostanie autoryzowana, rezerwacja nie zostaje utworzona.
+* Jeśli klient poda niepoprawne dane, system wyświetla komunikat o błędzie i prosi o poprawienie formularza.
 
+### Rezultat
 
-## 2. Zgłoś usterkę
+Rezerwacja zostaje zapisana w systemie, klient otrzymuje potwierdzenie, a rower zmienia status zgodnie z przebiegiem rezerwacji.
+
+## Przypadek użycia: Zakończ wypożyczenie
 
 ### Aktor główny
-- Klient zalogowany
+
+Klient zalogowany.
 
 ### Aktorzy pomocniczy
-- Pracownik
-- Mistrz serwisowy
 
-### Opis
-Klient zgłasza problem techniczny dotyczący roweru. Zgłoszenie trafia do pracownika oraz mistrza serwisowego odpowiedzialnego za naprawę.
+System płatności, rower IoT.
 
-### Scenariusz podstawowy
-1. Klient loguje się do systemu.
-2. Klient wybiera opcję „Zgłoś usterkę”.
-3. System wyświetla formularz zgłoszenia.
-4. Klient wybiera rower, którego dotyczy problem.
-5. Klient wpisuje opis usterki.
-6. System zapisuje zgłoszenie ze statusem „otwarte”.
-7. Pracownik przegląda zgłoszenie.
-8. Pracownik przekazuje zgłoszenie mistrzowi serwisowemu.
-9. Mistrz serwisowy przyjmuje zlecenie naprawy.
+### Warunki wstępne
 
-### Scenariusze alternatywne
-- Klient nie podał opisu problemu.
-- Wybrany rower nie istnieje w systemie.
-- Zgłoszenie zostało odrzucone przez pracownika.
+* Klient ma aktywne wypożyczenie.
+* Rower jest oznaczony jako wypożyczony.
+* System ma dostęp do danych rezerwacji.
+* Rower może przesłać informację o blokadzie lub lokalizacji.
 
-### Częstotliwość
-Kilka razy w tygodniu lub częściej w sezonie.
+### Przebieg podstawowy
 
-### Czas realizacji
-2–5 minut.
+1. Klient wybiera opcję zakończenia wypożyczenia w aplikacji.
+2. System wysyła polecenie zablokowania roweru.
+3. Rower potwierdza zablokowanie elektronicznej blokady.
+4. System pobiera lokalizację GPS roweru.
+5. System zapisuje czas zakończenia wypożyczenia.
+6. System oblicza końcową kwotę wypożyczenia.
+7. System przekazuje informację do systemu płatności.
+8. System płatności potwierdza transakcję.
+9. System zmienia status roweru na dostępny.
+10. System zapisuje wypożyczenie w historii.
+11. System wyświetla klientowi podsumowanie oraz paragon.
 
-### Wartość dla aktora
-Możliwość szybkiego zgłoszenia problemu i poprawa bezpieczeństwa użytkowników.
+### Przebieg alternatywny
 
+* Jeśli rower nie potwierdzi zablokowania, system informuje klienta o problemie i oznacza wypożyczenie jako wymagające weryfikacji.
+* Jeśli płatność nie zostanie potwierdzona, system zapisuje informację o problemie i przekazuje ją pracownikowi.
+* Jeśli lokalizacja GPS nie jest dostępna, system kończy wypożyczenie, ale oznacza je do ręcznej kontroli.
 
+### Rezultat
 
-## 3. Zarządzaj flotą
+Wypożyczenie zostaje zakończone, transakcja zostaje potwierdzona, rower zmienia status, a dane trafiają do historii wypożyczeń.
 
-### Aktor główny
-- Pracownik
-
-### Opis
-Pracownik zarządza flotą rowerów znajdujących się w systemie. Może dodawać nowe rowery, usuwać je, zmieniać ich status oraz edytować dane.
-
-### Scenariusz podstawowy
-1. Pracownik loguje się do systemu.
-2. Pracownik otwiera moduł zarządzania flotą.
-3. System wyświetla listę rowerów.
-4. Pracownik wybiera operację:
-   - dodanie roweru,
-   - edycję danych,
-   - zmianę statusu,
-   - usunięcie roweru.
-5. Pracownik wprowadza wymagane dane.
-6. System sprawdza poprawność danych.
-7. System zapisuje zmiany.
-8. System wyświetla komunikat o poprawnym wykonaniu operacji.
-
-### Scenariusze alternatywne
-- Dane roweru są niepoprawne lub niepełne.
-- Rower posiada aktywną rezerwację i nie może zostać usunięty.
-- Status roweru został zmieniony na „w serwisie”.
-
-### Częstotliwość
-Regularnie, kilka razy w tygodniu.
-
-### Czas realizacji
-1–4 minuty.
-
-### Wartość dla aktora
-Możliwość utrzymywania aktualnej i poprawnej bazy rowerów.
-
-
-
-## 4. Zarządzaj rezerwacjami
+## Przypadek użycia: Zgłoś usterkę
 
 ### Aktor główny
-- Pracownik
 
-### Opis
-Pracownik zarządza aktywnymi rezerwacjami klientów. Może zatwierdzać, anulować lub kończyć wypożyczenia oraz przeglądać historię operacji.
+Klient zalogowany.
 
-### Scenariusz podstawowy
-1. Pracownik loguje się do systemu.
-2. System wyświetla listę aktualnych rezerwacji.
-3. Pracownik wybiera konkretną rezerwację.
-4. Pracownik wykonuje wybraną operację.
-5. System aktualizuje status rezerwacji.
-6. System zapisuje zmiany w historii wypożyczeń.
-7. System wyświetla potwierdzenie wykonania operacji.
+### Aktorzy pomocniczy
 
-### Scenariusze alternatywne
-- Rezerwacja została wcześniej anulowana.
-- Rower nie został oddany na czas.
-- Podczas zakończenia wypożyczenia wykryto uszkodzenie roweru.
+Pracownik, mistrz serwisowy.
 
-### Częstotliwość
-Codziennie.
+### Warunki wstępne
 
-### Czas realizacji
-1–3 minuty.
+* Klient jest zalogowany.
+* Rower istnieje w systemie.
+* Klient może wskazać rower, którego dotyczy usterka.
 
-### Wartość dla aktora
-Możliwość kontrolowania przebiegu wypożyczeń i utrzymywania poprawności danych systemowych.
+### Przebieg podstawowy
+
+1. Klient wybiera opcję zgłoszenia usterki.
+2. System wyświetla formularz zgłoszenia.
+3. Klient wybiera rower, typ awarii oraz wpisuje opis problemu.
+4. Klient może dodać zdjęcie usterki.
+5. Klient wysyła formularz.
+6. System tworzy zgłoszenie usterki.
+7. System nadaje zgłoszeniu priorytet.
+8. System zmienia status roweru na w serwisie lub niedostępny.
+9. System blokuje możliwość dalszego wypożyczania roweru.
+10. System tworzy zlecenie serwisowe.
+11. System przekazuje informację do panelu serwisowego.
+12. Klient otrzymuje komunikat o przyjęciu zgłoszenia.
+
+### Przebieg alternatywny
+
+* Jeśli formularz jest niekompletny, system prosi o uzupełnienie brakujących danych.
+* Jeśli rower jest już w serwisie, system dopisuje zgłoszenie do istniejącego problemu.
+* Jeśli zgłoszenie nie może zostać zapisane, system informuje klienta o błędzie.
+
+### Rezultat
+
+Zgłoszenie usterki zostaje zapisane w systemie, rower zostaje zabezpieczony, a zlecenie serwisowe trafia do obsługi przez pracownika lub mistrza serwisowego.
